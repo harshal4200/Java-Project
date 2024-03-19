@@ -1,0 +1,14 @@
+import java.util.Scanner;
+
+public class Love {
+    public static void main(String[] args) {
+        Scanner love = new Scanner(System.in);
+        System.out.println("Test your Love");
+        System.out.print("Enter your name: ");
+        String Yourname = love.nextLine();
+        System.out.print("Enter your lover name: ");
+        String lovername = love.nextLine();
+        int b = (int)(Math.random()*100);
+        System.out.println("Your lover "+lovername+" loves "+b+"%"+" to "+Yourname);
+    }
+}
