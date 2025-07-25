@@ -1,0 +1,269 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Scanner;
+
+
+
+public class JdbcOne {
+    private static final String url="jdbc:mysql://localhost:3306/practice";
+    private static final String username="root";
+    private static  final String password="Harshal12!@";
+    public static void main(String[] args) {
+
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            System.out.println("Driver loaded successfully👍");
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
+
+        try {
+            Connection con= DriverManager.getConnection(url,username,password);
+            System.out.println("Connection done successfully😃👍");
+            while (true) {
+
+                System.out.println();
+                System.out.println("DEPARTMENT DATABASE SYSTEM");
+                System.out.println();
+                Scanner sc=new Scanner(System.in);
+                System.out.println("1. Add Student in department.");
+                System.out.println("2. Delete Student from department.");
+                System.out.println("3. Update Student details.");
+                System.out.println("4. View Details of Department Student.");
+                System.out.println("5. Get perticular student in department.");
+                System.out.println("0. Take Exit form the system.");
+                System.out.println();
+                System.out.print("Choose your options: ");
+                int details = sc.nextInt();
+                switch (details) {
+                    case 1:
+                        insertstudent(con, sc);
+                        break;
+                    case 2:
+                        deletestudent(con,sc);
+                        break;
+                    case 3:
+                        updatedetails(con,sc);
+                        break;
+                    case 4:
+                        viewDetails(con);
+                        break;
+                    case 5:
+                        getstudentdetails(con,sc);
+                        break;
+                    case 0:
+                        exit();
+                        sc.close();
+                        return;
+                    default:
+                        System.out.println("Enter valid number.");
+                }
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+
+    public static void insertstudent(Connection con,Scanner sc){
+        try {
+            System.out.print("Enter student ERP ID: ");
+            int id=sc.nextInt();
+            System.out.print("Enter student name: ");
+            String name=sc.next();
+sc.nextLine();
+            System.out.print("Enter student age: ");
+            int age=sc.nextInt();
+            System.out.print("Enter student rollno.: ");
+            int rollno=sc.nextInt();
+            System.out.print("Enter student phoneno.: ");
+            String phoneno=sc.next();
+            sc.nextLine();
+            System.out.print("Enter student email address: ");
+            String email=sc.next();
+            String query = "insert into ai_department (stu_ERP_ID,stu_Name,stu_Age,stu_Rollno,stu_Phoneno,stu_Email_address)" +
+                    "values('"+id+"','"+name+"','"+age+"','"+rollno+"','"+phoneno+"','"+email+"')";
+
+            try (PreparedStatement ps=con.prepareStatement(query)){
+                int affected=ps.executeUpdate();
+                if (affected>0){
+                    System.out.println("Student admited successfully.👍");
+                }else {
+                    System.out.println("ERROR!!");
+                }
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
+    }
+    public static void deletestudent(Connection con,Scanner sc){
+        try {
+            System.out.print("Enter student ERP ID: ");
+            int stu_ERP_ID=sc.nextInt();
+
+            if (!stu_ERP_IDExists(con, stu_ERP_ID)){
+                System.out.println("This ERP ID not exist.");
+            }
+            String query="DELETE FROM ai_department where stu_ERP_ID='"+stu_ERP_ID;
+            try (PreparedStatement ps=con.prepareStatement(query)){
+                int affected=ps.executeUpdate();
+                if (affected>0){
+                    System.out.println("Deleted successfully.");
+                }else {
+                    System.out.println("ERROR!!");
+                }
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    public static void updatedetails(Connection con,Scanner sc){
+        try {
+            System.out.print("Enter student ERP ID: ");
+            int stu_ERP_ID=sc.nextInt();
+
+            if (!stu_ERP_IDExists(con, stu_ERP_ID)){
+                System.out.println("This ERP ID not exist");
+                return;
+            }
+
+            System.out.print("Enter student name: ");
+            String newName=sc.next();
+            System.out.print("Enter student age: ");
+            int newAge=sc.nextInt();
+            System.out.print("Enter student rollno: ");
+            int newRollno=sc.nextInt();
+            System.out.print("Enter student Phone number: ");
+            String newPhone=sc.next();
+            System.out.print("Enter student Email address: ");
+            String newEmail=sc.next();
+
+            String query="UPDATE ai_department " +
+                    "SET stu_Name= ?, " +
+                    "stu_Age= ?, " +
+                    "stu_Rollno= ?, " +
+                    "stu_Phoneno= ?, " +
+                    "stu_Email_address= ? " +
+                    "WHERE stu_ERP_ID= ?";
+
+            try (PreparedStatement ps=con.prepareStatement(query)){
+                ps.setString(1,newName);
+                ps.setInt(2,newAge);
+                ps.setInt(3,newRollno);
+                ps.setString(4,newPhone);
+                ps.setString(5,newEmail);
+                ps.setInt(6,stu_ERP_ID);
+                try {
+
+                    int affected = ps.executeUpdate();
+                    if (affected > 0) {
+                        System.out.println("Student details updated successfully.");
+                    } else {
+                        System.out.println("ERROR!!!");
+                    }
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
+
+            }
+
+        }catch (Exception e){
+            System.out.print(e.getMessage());
+        }
+    }
+    private static boolean stu_ERP_IDExists(Connection con, int stu_ERP_ID) {
+        try {
+            String query="select stu_ERP_ID from ai_department where stu_ERP_ID= "+stu_ERP_ID;
+            try (PreparedStatement ps=con.prepareStatement(query)){
+                ResultSet rs=ps.executeQuery();
+                return rs.next();
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        return true;
+    }
+    public static void viewDetails(Connection con){
+        try {
+            String query="select * from ai_department";
+            try (PreparedStatement ps=con.prepareStatement(query)){
+                ResultSet rs=ps.executeQuery();
+                while (rs.next()){
+                    int id=rs.getInt("stu_ERP_ID");
+                    String name=rs.getString("stu_Name");
+                    int age=rs.getInt("stu_Age");
+                    int rollno=rs.getInt("stu_Rollno");
+                    String phone=rs.getString("stu_Phoneno");
+                    String email=rs.getString("stu_Email_address");
+                    System.out.println();
+                    System.out.println("Student ERP ID: "+id);
+                    System.out.println("Student Name: "+name);
+                    System.out.println("Student Age: "+age);
+                    System.out.println("Student Roll number: "+rollno);
+                    System.out.println("Student Phone number: "+phone);
+                    System.out.println("Student Email Address: "+email);
+                    System.out.println();
+                    System.out.println("=================");
+                }
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    public static void getstudentdetails(Connection con,Scanner sc){
+
+        try {
+            System.out.print("Enter Student ERP ID: ");
+            int stu_ERP_ID=sc.nextInt();
+            if (!stu_ERP_IDExists(con,stu_ERP_ID)){
+                System.out.println("This ID do not exists.");
+            }
+            String query="select * FROM ai_department WHERE stu_ERP_ID= "+stu_ERP_ID;
+            try (PreparedStatement ps=con.prepareStatement(query)){
+                ResultSet rs=ps.executeQuery();
+                while (rs.next()){
+                    int id=rs.getInt("stu_ERP_ID");
+                    String name=rs.getString("stu_Name");
+                    int age=rs.getInt("stu_Age");
+                    int rollno=rs.getInt("stu_Rollno");
+                    String phone=rs.getString("stu_Phoneno");
+                    String email=rs.getString("stu_Email_address");
+                    System.out.println();
+                    System.out.println("Student ERP ID: "+id);
+                    System.out.println("Student Name: "+name);
+                    System.out.println("Student Age: "+age);
+                    System.out.println("Student Roll number: "+rollno);
+                    System.out.println("Student Phone number: "+phone);
+                    System.out.println("Student Email Address: "+email);
+                    System.out.println();
+
+                }
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    public static void exit()throws InterruptedException{
+        System.out.print("Exiting System");
+        int i=6;
+        while (i!=0){
+            System.out.print(".");
+            Thread.sleep(500);
+            i--;
+        }
+        System.out.println();
+        System.out.println("Thankyou for using this application🙏");
+        System.out.println("Visit again.");
+    }
+
+}
